@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nazril Rahman Ramli — Developer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"Space Grotesk"', 'monospace'],
+          },
+          colors: {
+            canvas: '#FAF9F6',
+            ink:    '#111215',
+            muted:  '#6E717B',
+            line:   '#E7E6E1',
+            accent: '#4F46E5',
+          },
+          animation: {
+            'blob':         'blob 16s infinite alternate ease-in-out',
+            'blob2':        'blob2 20s infinite alternate ease-in-out',
+            'float-subtle': 'floatSubtle 7s ease-in-out infinite',
+            'pulse-dot':    'pulseDot 2.4s ease-in-out infinite',
+          },
+          keyframes: {
+            blob: {
+              '0%':   { transform: 'translate(0px,0px) scale(1)' },
+              '50%':  { transform: 'translate(55px,-45px) scale(1.1)' },
+              '100%': { transform: 'translate(-45px,35px) scale(0.92)' },
+            },
+            blob2: {
+              '0%':   { transform: 'translate(0px,0px) scale(1)' },
+              '50%':  { transform: 'translate(-65px,55px) scale(1.07)' },
+              '100%': { transform: 'translate(40px,-35px) scale(0.94)' },
+            },
+            floatSubtle: {
+              '0%,100%': { transform: 'translateY(0px)' },
+              '50%':     { transform: 'translateY(-8px)' },
+            },
+            pulseDot: {
+              '0%,100%': { opacity: '1', transform: 'scale(1)' },
+              '50%':     { opacity: '0.5', transform: 'scale(0.75)' },
+            },
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* ── Subtle grid ── */
+    .bg-grid {
+      background-size: 40px 40px;
+      background-image:
+        linear-gradient(to right,  rgba(0,0,0,0.032) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0,0,0,0.032) 1px, transparent 1px);
+    }
+
+    /* ── Film grain ── */
+    .noise {
+      position: fixed; inset: 0;
+      pointer-events: none; z-index: 50;
+      opacity: 0.022;
+      background-image: radial-gradient(#000 1px, transparent 0);
+      background-size: 4px 4px;
+    }
+
+    /* ── Custom cursor ── */
+    *, *::before, *::after { cursor: none !important; }
+    #cur-dot {
+      position: fixed; top: 0; left: 0; z-index: 9999;
+      width: 9px; height: 9px;
+      background: #4F46E5; border-radius: 50%;
+      pointer-events: none;
+      transform: translate(-50%,-50%);
+      transition: width .15s ease, height .15s ease, background .15s ease;
+      mix-blend-mode: multiply;
+    }
+    #cur-ring {
+      position: fixed; top: 0; left: 0; z-index: 9998;
+      width: 30px; height: 30px;
+      border: 1.5px solid rgba(79,70,229,.4);
+      border-radius: 50%;
+      pointer-events: none;
+      transform: translate(-50%,-50%);
+      transition: width .2s ease, height .2s ease, border-color .2s ease;
+    }
+
+    /* ── Scroll reveal ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity .75s cubic-bezier(.16,1,.3,1),
+                  transform .75s cubic-bezier(.16,1,.3,1);
+    }
+    .reveal.in { opacity: 1; transform: none; }
+
+    /* ── Word reveal ── */
+    .wr-word {
+      display: inline-block;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity .55s ease, transform .55s ease;
+    }
+    .wr-word.in { opacity: 1; transform: none; }
+
+    /* ── Hero elements hidden before JS ── */
+    .pre-anim { opacity: 0; transform: translateY(18px); }
+
+    /* ── Portrait card tilt ── */
+    #portrait-card {
+      transform-style: preserve-3d;
+      transition: transform .28s cubic-bezier(.2,.8,.2,1),
+                  box-shadow .28s ease;
+    }
+
+    /* ── Project card ── */
+    .proj-card {
+      transition: transform .22s ease,
+                  box-shadow .22s ease,
+                  border-color .22s ease;
+    }
+    .proj-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 22px 44px -12px rgba(79,70,229,.14),
+                  0 4px 14px -4px rgba(0,0,0,.08);
+      border-color: rgba(79,70,229,.35) !important;
+    }
+    .proj-card:hover .pa { transform: translateX(5px); color: #4F46E5; }
+    .pa { transition: transform .2s ease, color .2s ease; }
+
+    /* ── Nav underline ── */
+    .nl { position: relative; }
+    .nl::after {
+      content: ''; position: absolute; bottom: -1px; left: 0;
+      width: 0; height: 1.5px; background: #111215;
+      transition: width .25s ease;
+    }
+    .nl:hover::after { width: 100%; }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed; bottom: 28px; left: 50%;
+      transform: translateX(-50%) translateY(60px);
+      background: #111215; color: #fff;
+      font-family: 'Space Grotesk', monospace;
+      font-size: 12px; padding: 10px 20px;
+      border-radius: 99px; z-index: 999;
+      opacity: 0;
+      transition: transform .35s cubic-bezier(.16,1,.3,1), opacity .35s ease;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+    #toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: #fafaf9; }
+    ::-webkit-scrollbar-thumb { background: #d4d4d4; border-radius: 99px; }
+  </style>
+</head>
+
+<body class="bg-[#fbfbf9] text-ink font-sans antialiased relative min-h-screen overflow-x-hidden selection:bg-ink selection:text-white">
+
+  <!-- Cursor -->
+  <div id="cur-dot"></div>
+  <div id="cur-ring"></div>
+
+  <!-- Toast -->
+  <div id="toast">✓ Email copied</div>
+
+  <!-- Grain -->
+  <div class="noise" aria-hidden="true"></div>
+
+  <!-- Aurora blobs -->
+  <div class="fixed inset-0 pointer-events-none overflow-hidden z-0" aria-hidden="true">
+    <div class="absolute top-1/4 left-1/4 w-[560px] h-[560px] bg-gradient-to-tr from-indigo-200/30 via-sky-100/30 to-amber-100/20 rounded-full blur-3xl animate-blob"></div>
+    <div class="absolute bottom-1/4 right-1/4 w-[460px] h-[460px] bg-gradient-to-br from-violet-200/22 via-slate-200/28 to-teal-100/15 rounded-full blur-3xl animate-blob2"></div>
+  </div>
+
+  <div class="relative z-10 flex flex-col min-h-screen bg-grid">
+
+    <!-- ═══ NAVBAR ═══ -->
+    <header id="navbar" class="pre-anim w-full px-6 md:px-12 py-5 flex items-center justify-between border-b border-black/[0.05] sticky top-0 bg-white/80 backdrop-blur-md z-40">
+      <a class="group flex items-center gap-2.5" href="#hero">
+        <span class="w-8 h-8 rounded-full bg-ink text-white flex items-center justify-center text-xs font-mono font-bold group-hover:bg-accent transition-colors duration-200">NR</span>
+        <span class="text-sm font-semibold tracking-tight group-hover:text-neutral-500 transition-colors">Nazril Rahman Ramli</span>
+        <span class="hidden sm:inline text-[10px] font-mono text-muted/60 bg-black/[0.03] px-2 py-0.5 rounded border border-black/[0.05]">v2.5 // ARCHIVE</span>
+      </a>
+      <nav class="flex items-center gap-1 md:gap-2">
+        <a class="nl text-[11px] uppercase tracking-wider font-mono text-muted hover:text-ink px-3 py-1.5 rounded-full hover:bg-black/[0.04] transition-colors" href="#works">Works</a>
+        <a class="nl text-[11px] uppercase tracking-wider font-mono text-muted hover:text-ink px-3 py-1.5 rounded-full hover:bg-black/[0.04] transition-colors" href="#about">Bio</a>
+        <a class="text-[11px] font-mono font-semibold text-ink bg-white border border-black/10 px-3.5 py-1.5 rounded-full shadow-sm hover:border-accent/50 hover:text-accent transition-all" href="#contact">Contact</a>
+      </nav>
+    </header>
+
+    <!-- ═══ HERO ═══ -->
+    <main class="flex-1 flex flex-col items-center justify-center px-4 sm:px-6 py-16 md:py-24 relative" id="hero">
+
+      <!-- Badge -->
+      <div id="h-badge" class="pre-anim mb-6 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-black/[0.06] shadow-sm text-neutral-600">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse-dot"></span>
+        <span class="font-mono text-[11px] uppercase tracking-wider">Open for collaboration</span>
+      </div>
+
+      <!-- Portrait -->
+      <div id="h-portrait" class="pre-anim relative group my-2 max-w-[270px] w-full mx-auto">
+        <div class="absolute -inset-2 bg-gradient-to-b from-indigo-100/50 to-sky-50/30 rounded-2xl blur-lg -z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+        <div id="portrait-card" class="bg-white p-3.5 rounded-xl border border-black/[0.07] shadow-[0_18px_40px_-14px_rgba(0,0,0,0.11)] animate-float-subtle">
+          <div class="relative aspect-[3/4] overflow-hidden rounded-lg bg-neutral-100 border border-black/[0.04]">
+            <img
+              src="foto.png"
+              onerror="this.src='https://placehold.co/270x360/f4f4f4/aaaaaa?text=NR'"
+              alt="Nazril Rahman Ramli"
+              class="w-full h-full object-cover object-top contrast-[1.04] transition-transform duration-700 group-hover:scale-[1.04]"
+            >
+            <div class="absolute bottom-2 left-2">
+              <span class="bg-black/55 backdrop-blur-sm text-white/90 text-[9px] font-mono tracking-widest uppercase px-2 py-0.5 rounded-sm">Archive // 2000s</span>
+            </div>
+            <div class="absolute top-2 right-2">
+              <span class="bg-white/90 backdrop-blur-sm text-ink text-[9px] font-mono uppercase px-2 py-0.5 rounded border border-black/10">Fig. 01</span>
+            </div>
+          </div>
+          <div class="mt-3 pt-2.5 border-t border-black/[0.05] flex items-center justify-between">
+            <span class="flex items-center gap-1.5 text-[11px] text-muted font-mono">
+              <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+              Muara Teweh, ID • UTC+7
+            </span>
+            <span class="text-[11px] font-mono text-neutral-400">001</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Headline word-reveal -->
+      <div id="h-title" class="pre-anim text-center mt-7 max-w-xl mx-auto">
+        <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-ink font-sans" id="wr-title"></h1>
+        <p id="h-sub" class="pre-anim mt-3 text-sm sm:text-[15px] font-medium text-neutral-500 max-w-md mx-auto">
+          Software Developer &amp; Interface Architect.
+        </p>
+      </div>
+
+      <!-- CTA -->
+      <div id="h-cta" class="pre-anim mt-8 flex flex-wrap items-center justify-center gap-3">
+        <a href="#works" class="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-ink text-white font-semibold text-sm shadow-md hover:bg-neutral-800 hover:gap-3 transition-all active:scale-95">
+          Explore Works
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+        </a>
+        <a href="https://github.com/Nazrilajeha" target="_blank" rel="noopener"
+           class="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-white text-ink border border-black/10 font-semibold text-sm hover:border-black/30 hover:bg-neutral-50 transition-all active:scale-95 shadow-sm">
+          GitHub ↗
+        </a>
+        <a href="https://instagram.com/ajehaaaaaa" target="_blank" rel="noopener"
+           class="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-white text-ink border border-black/10 font-semibold text-sm hover:border-black/30 hover:bg-neutral-50 transition-all active:scale-95 shadow-sm">
+          @ajehaaaaaa ↗
+        </a>
+        <a href="https://instagram.com/nazri_lrhman" target="_blank" rel="noopener"
+           class="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-white text-ink border border-black/10 font-semibold text-sm hover:border-black/30 hover:bg-neutral-50 transition-all active:scale-95 shadow-sm">
+          @nazri_lrhman ↗
+        </a>
+      </div>
+
+      <!-- Quick pills -->
+      <div id="h-pills" class="pre-anim mt-9 flex items-center gap-2 text-[11px] font-mono text-muted">
+        <span class="text-neutral-400 uppercase tracking-wider">Jump:</span>
+        <button onclick="scrollTo('works')" class="px-2.5 py-1 rounded bg-black/[0.04] hover:bg-black/[0.08] text-neutral-700 transition">Works [9]</button>
+        <button onclick="scrollTo('about')" class="px-2.5 py-1 rounded bg-black/[0.04] hover:bg-black/[0.08] text-neutral-700 transition">Bio</button>
+        <button onclick="scrollTo('contact')" class="px-2.5 py-1 rounded bg-black/[0.04] hover:bg-black/[0.08] text-neutral-700 transition">Contact</button>
+      </div>
+    </main>
+
+    <!-- ═══ WORKS ═══ -->
+    <section id="works" class="w-full max-w-5xl mx-auto px-6 py-24 border-t border-black/[0.06]">
+      <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 reveal">
+        <div>
+          <span class="text-[11px] font-mono tracking-widest uppercase text-muted">Frame 02 // Selected Catalog</span>
+          <h2 class="text-2xl md:text-3xl font-bold tracking-tight text-ink mt-1">Works &amp; Projects</h2>
+        </div>
+        <p class="text-xs font-mono text-muted mt-2 md:mt-0">9 repositories — <a href="https://github.com/Nazrilajeha" target="_blank" rel="noopener" class="text-accent hover:underline">github.com/Nazrilajeha</a></p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5" id="proj-grid"></div>
+    </section>
+
+    <!-- ═══ ABOUT ═══ -->
+    <section id="about" class="w-full max-w-4xl mx-auto px-6 py-20 border-t border-black/[0.06]">
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+        <div class="md:col-span-4 reveal">
+          <span class="text-[11px] font-mono tracking-widest uppercase text-muted">Frame 03 // Philosophy</span>
+          <h2 class="text-xl font-bold tracking-tight text-ink mt-1">Approach &amp; Origin</h2>
+          <div class="mt-4 p-3.5 bg-white rounded-lg border border-black/[0.06] text-xs font-mono text-neutral-600 italic leading-relaxed">
+            "Recognizing ego was too high, I try to remain humble so I can keep learning and evaluating, and turn everything into something meaningful."
+          </div>
+        </div>
+        <div class="md:col-span-8 space-y-4 text-sm leading-relaxed text-neutral-600 reveal">
+          <p>I am <strong class="text-ink font-semibold">Nazril Rahman Ramli</strong>, a developer and interface creator based in Muara Teweh, Kalimantan Tengah, Indonesia. My discipline sits at the intersection of systematic engineering and aesthetic restraint.</p>
+          <p>Fascinated by how digital surfaces communicate identity, I build resilient web platforms, design system infrastructures, and experimental software — from low-level data manipulation in C to polished front-end interfaces.</p>
+          <p>Find all my work at <a href="https://github.com/Nazrilajeha" target="_blank" rel="noopener" class="text-accent underline underline-offset-2 hover:text-accent/70 transition-colors font-medium">@Nazrilajeha</a> on GitHub.</p>
+          <div class="pt-4 flex flex-wrap gap-2 font-mono text-xs">
+            <span class="px-2.5 py-1 bg-black/[0.04] text-neutral-700 rounded">Web Development</span>
+            <span class="px-2.5 py-1 bg-black/[0.04] text-neutral-700 rounded">UI / Interface</span>
+            <span class="px-2.5 py-1 bg-black/[0.04] text-neutral-700 rounded">Data &amp; Parsing</span>
+            <span class="px-2.5 py-1 bg-black/[0.04] text-neutral-700 rounded">C / Systems Logic</span>
+            <span class="px-2.5 py-1 bg-black/[0.04] text-neutral-700 rounded">Version Control</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ CONTACT ═══ -->
+    <section id="contact" class="w-full max-w-4xl mx-auto px-6 py-20 border-t border-black/[0.06]">
+      <div class="reveal bg-white rounded-2xl p-8 md:p-12 border border-black/[0.07] shadow-sm flex flex-col md:flex-row items-center justify-between gap-8">
+        <div>
+          <span class="text-[11px] font-mono tracking-widest uppercase text-accent font-semibold">Initiate Collaboration</span>
+          <h3 class="text-2xl font-bold tracking-tight text-ink mt-1">Have a project in mind?</h3>
+          <p class="text-sm text-neutral-500 mt-2">Open to selected collaborations and freelance work.</p>
+          <div class="mt-5 flex flex-wrap gap-3">
+            <a href="https://github.com/Nazrilajeha" target="_blank" rel="noopener"
+               class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-ink text-white text-xs font-mono font-semibold hover:bg-neutral-800 transition shadow-sm">
+              GitHub ↗
+            </a>
+            <a href="https://instagram.com/ajehaaaaaa" target="_blank" rel="noopener"
+               class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full border border-black/10 text-ink text-xs font-mono font-semibold hover:border-black/30 hover:bg-neutral-50 transition shadow-sm">
+              @ajehaaaaaa ↗
+            </a>
+            <a href="https://instagram.com/nazri_lrhman" target="_blank" rel="noopener"
+               class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full border border-black/10 text-ink text-xs font-mono font-semibold hover:border-black/30 hover:bg-neutral-50 transition shadow-sm">
+              @nazri_lrhman ↗
+            </a>
+          </div>
+        </div>
+        <div class="flex flex-col items-center gap-2 shrink-0">
+          <span class="text-[11px] font-mono text-neutral-400 uppercase tracking-wider">Email</span>
+          <div class="flex items-center gap-2">
+            <span id="email-txt" class="text-sm font-mono text-ink px-4 py-2 bg-neutral-50 border border-black/[0.07] rounded-full">Nazrilreal10@gmail.com</span>
+            <button id="copy-btn" onclick="copyEmail()"
+              class="px-4 py-2 rounded-full bg-black/[0.05] hover:bg-black/[0.1] text-ink text-xs font-mono font-semibold transition">
+              Copy
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ FOOTER ═══ -->
+    <footer class="w-full px-6 md:px-12 py-6 border-t border-black/[0.05] bg-white/70 backdrop-blur-sm flex flex-col sm:flex-row items-center justify-between text-xs font-mono text-muted gap-3">
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+        <span>Active // Entry Open</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <a class="nl hover:text-ink transition-colors" href="https://github.com/Nazrilajeha" target="_blank" rel="noopener">GitHub</a>
+        <span>•</span>
+        <a class="nl hover:text-ink transition-colors" href="https://instagram.com/ajehaaaaaa" target="_blank" rel="noopener">@ajehaaaaaa</a>
+        <span>•</span>
+        <a class="nl hover:text-ink transition-colors" href="https://instagram.com/nazri_lrhman" target="_blank" rel="noopener">@nazri_lrhman</a>
+      </div>
+      <span>© <span id="yr"></span> Nazril R. Ramli</span>
+    </footer>
+
+  </div>
+
+  <script>
+    /* ─── Year ─── */
+    document.getElementById('yr').textContent = new Date().getFullYear();
+
+    /* ─── Projects ─── */
+    const PROJECTS = [
+      { n:'project-dummy-cafe-shop',          t:'Web',       d:'Cafe online ordering and catalog interface with interactive menu browsing.',              s:'Catalog / Interface' },
+      { n:'websiteprototypevibecoding',        t:'Web',       d:'Rapid prototype focusing on modern vibe coding aesthetics and fluid interactions.',       s:'UI / Fluid Interaction' },
+      { n:'website-3',                         t:'Web',       d:'Minimalist responsive web platform crafted with modular interface components.',           s:'Modular Architecture' },
+      { n:'belajar-mengelola-data',            t:'Data',      d:'Data management workflow: structured parsing, cleaning, and analysis pipelines.',        s:'Pipelines / Parsing' },
+      { n:'belajar-mengelola-data-lewat-c-',  t:'C / Logic', d:'Low-level data structure manipulation and algorithmic state management in C.',           s:'C / Systems Logic' },
+      { n:'latihan-ngoding',                   t:'Practice',  d:'Collection of algorithmic exercises, syntax drills, and clean code experiments.',        s:'Algorithms / Drills' },
+      { n:'kamparan',                          t:'Web',       d:'Dynamic digital media portal and publication platform prototype.',                        s:'Media / Publishing' },
+      { n:'Data-dummy-project',                t:'Data',      d:'Synthetic dataset generation and exploratory data visualization engine.',                s:'Synthetic Data / Viz' },
+      { n:'havel_finance',                     t:'Finance',   d:'Personal wealth tracking, balance analytics, and financial ledger dashboard.',           s:'Ledger / Dashboard' },
+    ];
+
+    const grid = document.getElementById('proj-grid');
+    PROJECTS.forEach((p, i) => {
+      const a = document.createElement('article');
+      a.className = 'proj-card reveal bg-white rounded-xl p-5 border border-black/[0.06] flex flex-col justify-between';
+      a.style.transitionDelay = `${i * 0.065}s`;
+      a.innerHTML = `
+        <div>
+          <div class="flex items-center justify-between text-xs font-mono text-neutral-400 mb-3">
+            <span class="px-2 py-0.5 rounded bg-black/[0.03] border border-black/[0.04] text-[10px] uppercase font-semibold text-neutral-600">${p.t}</span>
+            <span class="text-[11px]">${String(i+1).padStart(2,'0')} // REPO</span>
+          </div>
+          <h3 class="font-bold text-[15px] font-mono text-ink tracking-tight leading-snug">${p.n}</h3>
+          <p class="text-xs text-muted mt-2 leading-relaxed">${p.d}</p>
+        </div>
+        <div class="mt-6 pt-4 border-t border-black/[0.04] flex items-center justify-between">
+          <span class="text-[11px] font-mono text-neutral-500">${p.s}</span>
+          <a href="https://github.com/Nazrilajeha/${p.n}" target="_blank" rel="noopener"
+             class="pa text-sm text-ink font-bold hover:text-accent transition-colors">→</a>
+        </div>`;
+      grid.appendChild(a);
+    });
+
+    /* ─── Word reveal ─── */
+    const titleEl = document.getElementById('wr-title');
+    ['Nazril', 'Rahman', 'Ramli'].forEach((w, i) => {
+      const s = document.createElement('span');
+      s.className = 'wr-word';
+      s.style.transitionDelay = `${0.62 + i * 0.13}s`;
+      s.textContent = w + (i < 2 ? '\u00A0' : '');
+      titleEl.appendChild(s);
+    });
+
+    /* ─── Page load sequence ─── */
+    const SEQ = [
+      { id: 'navbar',    delay: 80  },
+      { id: 'h-badge',   delay: 220 },
+      { id: 'h-portrait',delay: 380 },
+      { id: 'h-title',   delay: 520 },
+      { id: 'h-sub',     delay: 650 },
+      { id: 'h-cta',     delay: 760 },
+      { id: 'h-pills',   delay: 860 },
+    ];
+
+    SEQ.forEach(({ id, delay }) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.style.transition = 'opacity .8s cubic-bezier(.16,1,.3,1), transform .8s cubic-bezier(.16,1,.3,1)';
+      setTimeout(() => {
+        el.style.opacity = '1';
+        el.style.transform = 'none';
+      }, delay);
+    });
+
+    // Word reveal trigger
+    setTimeout(() => {
+      document.querySelectorAll('.wr-word').forEach(w => w.classList.add('in'));
+    }, 600);
+
+    /* ─── Scroll reveal ─── */
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('in'); obs.unobserve(e.target); }
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+    /* ─── Portrait 3-D tilt ─── */
+    const pc = document.getElementById('portrait-card');
+    if (pc) {
+      pc.addEventListener('mousemove', e => {
+        const r = pc.getBoundingClientRect();
+        const rx = -((e.clientY - r.top  - r.height/2) / r.height) * 10;
+        const ry =  ((e.clientX - r.left - r.width /2) / r.width ) * 10;
+        pc.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg) translateY(-3px)`;
+      });
+      pc.addEventListener('mouseleave', () => {
+        pc.style.transform = 'perspective(900px) rotateX(0) rotateY(0) translateY(0)';
+      });
+    }
+
+    /* ─── Custom cursor ─── */
+    const dot  = document.getElementById('cur-dot');
+    const ring = document.getElementById('cur-ring');
+    let mx=0,my=0,rx2=0,ry2=0;
+
+    document.addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      dot.style.left = mx + 'px'; dot.style.top = my + 'px';
+    });
+    (function tick() {
+      rx2 += (mx - rx2) * 0.13;
+      ry2 += (my - ry2) * 0.13;
+      ring.style.left = rx2 + 'px'; ring.style.top = ry2 + 'px';
+      requestAnimationFrame(tick);
+    })();
+
+    document.querySelectorAll('a, button, .proj-card, #portrait-card').forEach(el => {
+      el.addEventListener('mouseenter', () => {
+        dot.style.width = dot.style.height = '15px';
+        ring.style.width = ring.style.height = '46px';
+        ring.style.borderColor = 'rgba(79,70,229,.6)';
+      });
+      el.addEventListener('mouseleave', () => {
+        dot.style.width = dot.style.height = '9px';
+        ring.style.width = ring.style.height = '30px';
+        ring.style.borderColor = 'rgba(79,70,229,.4)';
+      });
+    });
+
+    /* ─── Smooth scroll ─── */
+    function scrollTo(id) {
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    /* ─── Copy email ─── */
+    function copyEmail() {
+      const email = document.getElementById('email-txt').textContent.trim();
+      navigator.clipboard.writeText(email).then(() => {
+        const btn = document.getElementById('copy-btn');
+        btn.textContent = 'Copied!';
+        btn.style.cssText += 'background:rgba(79,70,229,.1);color:#4F46E5;';
+        const toast = document.getElementById('toast');
+        toast.classList.add('show');
+        setTimeout(() => {
+          btn.textContent = 'Copy';
+          btn.style.background = btn.style.color = '';
+          toast.classList.remove('show');
+        }, 2200);
+      });
+    }
+  </script>
+</body>
+</html>
